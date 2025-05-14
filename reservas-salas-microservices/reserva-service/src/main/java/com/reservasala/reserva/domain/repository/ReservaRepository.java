@@ -4,13 +4,11 @@ import com.reservasala.reserva.domain.model.Reserva;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface ReservaRepository {
     List<Reserva> findAll();
     List<Reserva> findAll(Sort sort);
@@ -36,4 +34,6 @@ public interface ReservaRepository {
     Reserva getById(Long aLong);
     Reserva getReferenceById(Long aLong);
     List<Reserva> findBySalaIdAndDataHoraBetween(Long salaId, LocalDateTime inicio, LocalDateTime fim);
+    List<Reserva> findByUsuarioId(Long usuarioId);
+    List<Reserva> findBySalaId(Long salaId);
 } 

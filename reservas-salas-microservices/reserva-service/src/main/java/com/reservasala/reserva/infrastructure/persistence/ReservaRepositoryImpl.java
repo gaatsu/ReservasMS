@@ -2,6 +2,7 @@ package com.reservasala.reserva.infrastructure.persistence;
 
 import com.reservasala.reserva.domain.model.Reserva;
 import com.reservasala.reserva.domain.repository.ReservaRepository;
+import com.reservasala.reserva.infrastructure.persistence.entity.ReservaJpaEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -183,6 +184,20 @@ public class ReservaRepositoryImpl implements ReservaRepository {
     @Override
     public List<Reserva> findBySalaIdAndDataHoraBetween(Long salaId, LocalDateTime inicio, LocalDateTime fim) {
         return jpaRepository.findBySalaIdAndDataHoraBetween(salaId, inicio, fim).stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Reserva> findByUsuarioId(Long usuarioId) {
+        return jpaRepository.findByUsuarioId(usuarioId).stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Reserva> findBySalaId(Long salaId) {
+        return jpaRepository.findBySalaId(salaId).stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
     }
