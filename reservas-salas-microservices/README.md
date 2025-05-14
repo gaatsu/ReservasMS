@@ -1,181 +1,97 @@
 # Sistema de Reserva de Salas
 
-Sistema de reserva de salas desenvolvido com arquitetura de microserviços usando Spring Boot.
+Este é um sistema de reserva de salas desenvolvido usando microserviços com Spring Boot.
 
-## Arquitetura
+## Estrutura do Projeto
 
-O sistema é composto pelos seguintes microserviços:
+O projeto é composto pelos seguintes microserviços:
 
-- **api-gateway**: Gateway de API para roteamento e autenticação
-- **usuario-service**: Gerenciamento de usuários
-- **sala-service**: Gerenciamento de salas
-- **reserva-service**: Gerenciamento de reservas
-- **eureka-server**: Servidor de descoberta de serviços
-
-### Estrutura dos Microserviços
-
-Cada microserviço segue a arquitetura hexagonal (ports and adapters) com as seguintes camadas:
-
-- **Domain**: Contém as entidades e regras de negócio
-  - `model/`: Entidades do domínio
-  - `repository/`: Interfaces dos repositórios
-  - `service/`: Serviços do domínio
-  - `event/`: Eventos do domínio
-
-- **Application**: Contém a lógica de aplicação
-  - `service/`: Serviços de aplicação
-
-- **Interfaces**: Contém as interfaces de entrada
-  - `rest/`: Controladores REST
-
-- **Infrastructure**: Contém implementações técnicas
-  - `persistence/`: Implementações de persistência
-  - `event/`: Implementações de eventos
+1. **usuario-service**: Gerencia usuários do sistema
+2. **sala-service**: Gerencia as salas disponíveis
+3. **reserva-service**: Gerencia as reservas de salas
+4. **api-gateway**: Gateway de API para roteamento e segurança
 
 ## Tecnologias Utilizadas
 
 - Java 17
 - Spring Boot 3.2.3
-- Spring Cloud
-- Spring Security
 - Spring Data JPA
 - PostgreSQL
-- Maven
 - Docker
-- JWT para autenticação
+- Maven
 
-## Pré-requisitos
+## Arquitetura
+
+O projeto segue a arquitetura hexagonal (também conhecida como Ports and Adapters), que separa a lógica de negócios da infraestrutura técnica. Cada microserviço é dividido em camadas:
+
+- **Domain**: Contém as entidades e regras de negócio
+- **Application**: Contém os casos de uso e serviços de aplicação
+- **Infrastructure**: Contém as implementações técnicas (repositórios, APIs, etc.)
+- **Interfaces**: Contém os adaptadores de entrada (controllers, eventos, etc.)
+
+## Configuração do Ambiente
+
+### Pré-requisitos
 
 - Java 17 ou superior
 - Maven
 - Docker e Docker Compose
 - PostgreSQL
 
-## Configuração do Ambiente
+### Configuração do Banco de Dados
+
+1. Crie um banco de dados PostgreSQL para cada microserviço:
+   - `usuario_db`
+   - `sala_db`
+   - `reserva_db`
+
+2. Configure as credenciais no arquivo `application.yml` de cada serviço.
+
+### Executando o Projeto
 
 1. Clone o repositório:
 ```bash
-git clone [URL_DO_REPOSITÓRIO]
+git clone https://github.com/seu-usuario/reservas-salas-microservices.git
 cd reservas-salas-microservices
 ```
 
-2. Configure as variáveis de ambiente:
-   - Copie o arquivo `.env.example` para `.env`
-   - Ajuste as variáveis conforme necessário
-
-3. Inicie os serviços com Docker Compose:
+2. Compile o projeto:
 ```bash
-docker-compose up -d
+mvn clean package
 ```
 
-## Executando o Projeto
-
-1. Inicie o Eureka Server:
+3. Execute os serviços usando Docker Compose:
 ```bash
-cd eureka-server
-./mvnw spring-boot:run
-```
-
-2. Inicie o API Gateway:
-```bash
-cd api-gateway
-./mvnw spring-boot:run
-```
-
-3. Inicie os microserviços:
-```bash
-# Em terminais separados
-cd usuario-service
-./mvnw spring-boot:run
-
-cd sala-service
-./mvnw spring-boot:run
-
-cd reserva-service
-./mvnw spring-boot:run
+docker-compose up
 ```
 
 ## Endpoints da API
 
-### Usuário Service
-- `POST /api/usuarios`: Criar usuário
-- `GET /api/usuarios`: Listar usuários
-- `GET /api/usuarios/{id}`: Buscar usuário por ID
-- `PUT /api/usuarios/{id}`: Atualizar usuário
-- `DELETE /api/usuarios/{id}`: Deletar usuário
-- `GET /api/usuarios/ativos`: Listar usuários ativos
-- `GET /api/usuarios/matricula/{matricula}`: Buscar por matrícula
+### Usuário Service (Porta 8081)
 
-### Sala Service
-- `POST /api/salas`: Criar sala
-- `GET /api/salas`: Listar salas
-- `GET /api/salas/{id}`: Buscar sala por ID
-- `PUT /api/salas/{id}`: Atualizar sala
-- `DELETE /api/salas/{id}`: Deletar sala
-- `GET /api/salas/ativas`: Listar salas ativas
+- `POST /usuarios`: Criar usuário
+- `GET /usuarios`: Listar usuários
+- `GET /usuarios/{id}`: Buscar usuário por ID
+- `PUT /usuarios/{id}`: Atualizar usuário
+- `DELETE /usuarios/{id}`: Deletar usuário
 
-### Reserva Service
-- `POST /api/reservas`: Criar reserva
-- `GET /api/reservas`: Listar reservas
-- `GET /api/reservas/{id}`: Buscar reserva por ID
-- `PUT /api/reservas/{id}`: Atualizar reserva
-- `DELETE /api/reservas/{id}`: Deletar reserva
-- `GET /api/reservas/usuario/{usuarioId}`: Listar reservas por usuário
-- `GET /api/reservas/sala/{salaId}`: Listar reservas por sala
+### Sala Service (Porta 8082)
 
-## Eventos do Domínio
+- `POST /salas`: Criar sala
+- `GET /salas`: Listar salas
+- `GET /salas/{id}`: Buscar sala por ID
+- `PUT /salas/{id}`: Atualizar sala
+- `DELETE /salas/{id}`: Deletar sala
 
-O sistema utiliza eventos do domínio para comunicação entre os microserviços:
+### Reserva Service (Porta 8083)
 
-### Usuário Service
-- `UsuarioCriadoEvent`
-- `UsuarioAtualizadoEvent`
-- `UsuarioDeletadoEvent`
-
-### Sala Service
-- `SalaCriadaEvent`
-- `SalaAtualizadaEvent`
-- `SalaDeletadaEvent`
-
-## Segurança
-
-O sistema utiliza JWT para autenticação. Para acessar os endpoints protegidos:
-
-1. Faça login para obter o token JWT
-2. Inclua o token no header das requisições:
-```
-Authorization: Bearer [seu_token_jwt]
-```
-
-## Monitoramento
-
-- Eureka Dashboard: `http://localhost:8761`
-- API Gateway: `http://localhost:8080`
-
-## Desenvolvimento
-
-### Estrutura de Diretórios
-```
-reservas-salas-microservices/
-├── api-gateway/
-├── usuario-service/
-├── sala-service/
-├── reserva-service/
-└── eureka-server/
-```
-
-### Comandos Úteis
-
-```bash
-# Limpar e instalar dependências
-./mvnw clean install
-
-# Executar testes
-./mvnw test
-
-# Executar com perfil específico
-./mvnw spring-boot:run -Dspring.profiles.active=dev
-```
+- `POST /reservas`: Criar reserva
+- `GET /reservas`: Listar reservas
+- `GET /reservas/{id}`: Buscar reserva por ID
+- `PUT /reservas/{id}`: Atualizar reserva
+- `DELETE /reservas/{id}`: Deletar reserva
+- `GET /reservas/usuario/{usuarioId}`: Listar reservas por usuário
+- `GET /reservas/sala/{salaId}`: Listar reservas por sala
 
 ## Contribuição
 
