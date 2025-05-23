@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Reservas de Salas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+        .sala-disponivel {
+            color: #28a745;
+        }
+        .sala-ocupada {
+            color: #dc3545;
+        }
+        .alert {
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .btn-icon {
+            padding: 0.25rem 0.5rem;
+            margin-right: 5px;
+        }
+        .modal-header {
+            background-color: #f8f9fa;
+        }
+        .loading {
+            display: none;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-4">
+        <h1 class="mb-4">Sistema de Reservas de Salas</h1>
+
+        <!-- Loading indicator -->
+        <div id="loading" class="loading">
+            <div class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensagens de sucesso/erro -->
+        <div id="alertMessage" style="display: none;"></div>
+
+        <!-- Formulário de Nova Reserva -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-calendar-plus"></i> Nova Reserva
+            </div>
+            <div class="card-body">
+                <form id="formReserva">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="salaId">Sala</label>
+                                <select class="form-control" id="salaId" name="salaId" required>
+                                    <option value="">Selecione uma sala</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="usuarioId">Usuário</label>
+                                <select class="form-control" id="usuarioId" name="usuarioId" required>
+                                    <option value="">Selecione um usuário</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="dataHora">Data e Hora</label>
+                                <input type="datetime-local" class="form-control" id="dataHora" name="dataHora" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Reservar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Formulário de Novo Usuário -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-person-plus"></i> Novo Usuário
+            </div>
+            <div class="card-body">
+                <form id="formUsuario">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="nomeUsuario">Nome</label>
+                                <input type="text" class="form-control" id="nomeUsuario" name="nome" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="emailUsuario">Email</label>
+                                <input type="email" class="form-control" id="emailUsuario" name="email" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Criar Usuário</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Formulário de Nova Sala -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-building-add"></i> Nova Sala
+            </div>
+            <div class="card-body">
+                <form id="formSala">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="nomeSala">Nome da Sala</label>
+                                <input type="text" class="form-control" id="nomeSala" name="nome" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="capacidadeSala">Capacidade</label>
+                                <input type="number" class="form-control" id="capacidadeSala" name="capacidade" min="1" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Criar Sala</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lista de Reservas -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-calendar-check"></i> Reservas Existentes
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Sala</th>
+                                <th>Usuário</th>
+                                <th>Data/Hora</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reservasTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Salas -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-building"></i> Salas Disponíveis
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Capacidade</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salasTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Usuários -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-people"></i> Usuários
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html> 

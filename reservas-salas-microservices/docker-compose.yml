@@ -1,16 +1,20 @@
+version: '3.8'
+
 services:
   # Banco de dados
   postgres:
-    image: postgres:latest
+    image: postgres:17
     container_name: postgres
     environment:
       POSTGRES_DB: reservas
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_MULTIPLE_DATABASES: usuario_db,sala_db,reserva_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
     networks:
       - reservas-network
     healthcheck:
@@ -73,7 +77,7 @@ services:
     depends_on:
       - postgres
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/reservas
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/usuario_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -93,7 +97,7 @@ services:
       - postgres
       - kafka
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/reservas
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sala_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -113,7 +117,7 @@ services:
       - postgres
       - kafka
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/reservas
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/reserva_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -135,6 +139,17 @@ services:
       - reserva-service
     ports:
       - "8080:8080"
+    networks:
+      - reservas-network
+
+  # Frontend Service
+  frontend-service:
+    build: ./frontend-service
+    container_name: frontend-service
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway
     networks:
       - reservas-network
 

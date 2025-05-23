@@ -1,104 +1,169 @@
-# Sistema de Reserva de Salas
-
-Este é um sistema de reserva de salas desenvolvido usando microserviços com Spring Boot.
-
-## Estrutura do Projeto
-
-O projeto é composto pelos seguintes microserviços:
-
-1. **usuario-service**: Gerencia usuários do sistema
-2. **sala-service**: Gerencia as salas disponíveis
-3. **reserva-service**: Gerencia as reservas de salas
-4. **api-gateway**: Gateway de API para roteamento e segurança
-
-## Tecnologias Utilizadas
-
-- Java 17
-- Spring Boot 3.2.3
-- Spring Data JPA
-- PostgreSQL
-- Docker
-- Maven
+# Sistema de Reservas de Salas - Microserviços
 
 ## Arquitetura
 
-O projeto segue a arquitetura hexagonal (também conhecida como Ports and Adapters), que separa a lógica de negócios da infraestrutura técnica. Cada microserviço é dividido em camadas:
+Este é um sistema de reservas de salas implementado em microserviços com:
 
-- **Domain**: Contém as entidades e regras de negócio
-- **Application**: Contém os casos de uso e serviços de aplicação
-- **Infrastructure**: Contém as implementações técnicas (repositórios, APIs, etc.)
-- **Interfaces**: Contém os adaptadores de entrada (controllers, eventos, etc.)
+### Backend
+- **API Gateway**: Gateway que gerencia as rotas entre microserviços (Spring Boot - Porta 8080)
+- **Usuario Service**: Microserviço de gestão de usuários (Spring Boot - Porta 8081)
+- **Sala Service**: Microserviço de gestão de salas (Spring Boot - Porta 8082)
+- **Reserva Service**: Microserviço de gestão de reservas (Spring Boot - Porta 8083)
 
-## Configuração do Ambiente
+### Frontend
+- **Frontend Service**: Interface web estática servida via Nginx (Porta 3000)
+  - HTML/CSS/JavaScript moderno
+  - Comunicação direta com os microserviços via proxy
+  - Interface responsiva com Bootstrap
+
+### Infraestrutura
+- **PostgreSQL**: Banco de dados (Porta 5432)
+- **Apache Kafka**: Sistema de mensageria para comunicação entre microserviços
+- **Nginx**: Servidor web para o frontend com proxy reverso
+
+## Estrutura do Projeto
+
+```
+reservas-salas-microservices/
+├── api-gateway/           # API Gateway (Spring Boot)
+├── usuario-service/       # Microserviço de Usuários
+├── sala-service/         # Microserviço de Salas
+├── reserva-service/      # Microserviço de Reservas
+├── frontend-service/     # Frontend Estático
+│   ├── public/          # Arquivos HTML/CSS/JS
+│   ├── Dockerfile       # Container Nginx
+│   └── nginx.conf       # Configuração do proxy
+└── docker-compose.yml    # Orquestração dos containers
+```
+
+## Migração do Frontend
+
+### ✅ Concluído - Front-end Separado do API Gateway
+
+O front-end foi migrado com sucesso do API Gateway para um serviço dedicado:
+
+**Antes**: 
+- Frontend como template Thymeleaf dentro do API Gateway
+- Localização: `api-gateway/src/main/resources/templates/reservas.html`
+
+**Depois**:
+- Frontend como aplicação web estática independente
+- Localização: `frontend-service/public/`
+- Tecnologia: HTML + CSS + JavaScript moderno
+- Servidor: Nginx com proxy reverso
+
+### Benefícios da Migração
+
+1. **Separação de Responsabilidades**: Frontend e backend completamente desacoplados
+2. **Escalabilidade**: Frontend pode ser escalado independentemente
+3. **Tecnologia Moderna**: Uso de JavaScript moderno com Fetch API
+4. **Performance**: Nginx otimizado para servir conteúdo estático
+5. **Flexibilidade**: Facilita futuras migrações para frameworks como React, Vue, etc.
+
+## Como Executar
 
 ### Pré-requisitos
+- Docker
+- Docker Compose
 
-- Java 17 ou superior
-- Maven
-- Docker e Docker Compose
-- PostgreSQL
+### Execução
 
-### Configuração do Banco de Dados
-
-1. Crie um banco de dados PostgreSQL para cada microserviço:
-   - `usuario_db`
-   - `sala_db`
-   - `reserva_db`
-
-2. Configure as credenciais no arquivo `application.yml` de cada serviço.
-
-### Executando o Projeto
-
-1. Clone o repositório:
+1. **Clone o repositório**
 ```bash
-git clone https://github.com/seu-usuario/reservas-salas-microservices.git
+git clone <repo-url>
 cd reservas-salas-microservices
 ```
 
-2. Compile o projeto:
+2. **Execute com Docker Compose**
 ```bash
-mvn clean package
+docker-compose up --build
 ```
 
-3. Execute os serviços usando Docker Compose:
-```bash
-docker-compose up
-```
+3. **Acesse a aplicação**
+- **Frontend**: http://localhost:3000
+- **API Gateway**: http://localhost:8080
+- **Banco de dados**: localhost:5432
 
-## Endpoints da API
+### Acessos Diretos aos Microserviços
 
-### Usuário Service (Porta 8081)
+- **Usuários**: http://localhost:8081/api/usuarios
+- **Salas**: http://localhost:8082/api/salas  
+- **Reservas**: http://localhost:8083/api/reservas
 
-- `POST /usuarios`: Criar usuário
-- `GET /usuarios`: Listar usuários
-- `GET /usuarios/{id}`: Buscar usuário por ID
-- `PUT /usuarios/{id}`: Atualizar usuário
-- `DELETE /usuarios/{id}`: Deletar usuário
+## Funcionalidades
 
-### Sala Service (Porta 8082)
+### Interface Web (localhost:3000)
+- ✅ Listar reservas, salas e usuários
+- ✅ Criar novas reservas
+- ✅ Criar novos usuários
+- ✅ Criar novas salas
+- ✅ Editar salas e usuários
+- ✅ Deletar reservas, salas e usuários
+- ✅ Visualização de status de disponibilidade das salas
 
-- `POST /salas`: Criar sala
-- `GET /salas`: Listar salas
-- `GET /salas/{id}`: Buscar sala por ID
-- `PUT /salas/{id}`: Atualizar sala
-- `DELETE /salas/{id}`: Deletar sala
+### APIs REST
 
-### Reserva Service (Porta 8083)
+#### Usuários (Porta 8081)
+- `GET /api/usuarios` - Listar usuários
+- `POST /api/usuarios` - Criar usuário
+- `PUT /api/usuarios/{id}` - Atualizar usuário
+- `DELETE /api/usuarios/{id}` - Deletar usuário
 
-- `POST /reservas`: Criar reserva
-- `GET /reservas`: Listar reservas
-- `GET /reservas/{id}`: Buscar reserva por ID
-- `PUT /reservas/{id}`: Atualizar reserva
-- `DELETE /reservas/{id}`: Deletar reserva
-- `GET /reservas/usuario/{usuarioId}`: Listar reservas por usuário
-- `GET /reservas/sala/{salaId}`: Listar reservas por sala
+#### Salas (Porta 8082)
+- `GET /api/salas` - Listar salas
+- `POST /api/salas` - Criar sala
+- `PUT /api/salas/{id}` - Atualizar sala
+- `DELETE /api/salas/{id}` - Deletar sala
+
+#### Reservas (Porta 8083)
+- `GET /api/reservas` - Listar reservas
+- `POST /api/reservas` - Criar reserva
+- `DELETE /api/reservas/{id}` - Deletar reserva
+
+## Tecnologias Utilizadas
+
+### Backend
+- **Java 17**
+- **Spring Boot 3.x**
+- **Spring Data JPA**
+- **Spring Cloud Gateway**
+- **PostgreSQL**
+- **Apache Kafka**
+- **Docker**
+
+### Frontend
+- **HTML5**
+- **CSS3**
+- **JavaScript ES6+**
+- **Bootstrap 5**
+- **Bootstrap Icons**
+- **Nginx**
+
+## Próximos Passos
+
+### Melhorias Sugeridas
+1. **Autenticação e Autorização**: Implementar JWT/OAuth2
+2. **Monitoring**: Adicionar Prometheus + Grafana
+3. **Logs Centralizados**: ELK Stack ou Fluentd
+4. **Testes**: Testes unitários e de integração
+5. **CI/CD**: Pipeline de deploy automatizado
+6. **Framework Frontend**: Migração para React/Vue.js para uma SPA completa
+
+### Estrutura de Produção
+- Load Balancer (nginx/HAProxy)
+- Service Discovery (Eureka/Consul)
+- Configuration Server (Spring Cloud Config)
+- Circuit Breaker (Hystrix/Resilience4j)
+- API Rate Limiting
+- CORS Configuration
+- HTTPS/SSL
 
 ## Contribuição
 
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/nova-feature`)
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
 ## Licença
